@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"nethttppractice/internal/api/handlers"
+	"nethttppractice/internal/usecases"
 	postgres "nethttppractice/internal/repository"
 
 	"github.com/joho/godotenv"
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	poolRepo := postgres.NewPgRepo(pool)
-	handlers := handlers.NewItemHandler(poolRepo)
+	handlers := usecases.NewItemHandler(poolRepo)
 
 	defer pool.Close()
 	if err := pool.Ping(ctx); err != nil {
