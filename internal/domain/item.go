@@ -1,10 +1,13 @@
-package itemrepo 
+package domain
 
-import "context"
+import (
+	"context"
+)
 
 type Item struct {
 	ID   int
 	Name string
+	Description string
 }
 
 type Repository interface {

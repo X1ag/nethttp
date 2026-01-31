@@ -6,25 +6,31 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"nethttppractice/internal/api/handlers"
-	"nethttppractice/internal/item"
+	postgres "nethttppractice/internal/repository"
+
+	"github.com/joho/godotenv"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
+	godotenv.Load()
 	dsn := os.Getenv("DB_DSN") 
 
 	ctx := context.Background()
+	poolCtx, cancel := context.WithTimeout(ctx, 10 * time.Second)
 
-	pool, err := pgxpool.New(ctx, dsn)
+	defer cancel()
+
+	pool, err := pgxpool.New(poolCtx, dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	poolRepo := itemrepo.NewPgRepo(pool)
-
+	poolRepo := postgres.NewPgRepo(pool)
 	handlers := handlers.NewItemHandler(poolRepo)
 
 	defer pool.Close()

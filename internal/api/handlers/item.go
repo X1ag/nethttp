@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"nethttppractice/internal/item"
+	"nethttppractice/internal/domain"
 )
 
 type ItemHandler struct {
-	repo itemrepo.Repository
+	repo domain.Repository
 }
 
-func NewItemHandler(repo itemrepo.Repository) *ItemHandler {
+func NewItemHandler(repo domain.Repository) *ItemHandler {
 	return &ItemHandler{
 		repo: repo,
 	}
@@ -32,7 +32,7 @@ func (h *ItemHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 func (h *ItemHandler) InsertItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
-	var item itemrepo.Item
+	var item domain.Item
 	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 		http.Error(w, "body error", http.StatusInternalServerError)
 		slog.Error("decode json", "err", err.Error())

@@ -1,1 +1,0 @@
-create index concurrently if not exists idx_items_name on items (name);
