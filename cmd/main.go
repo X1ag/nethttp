@@ -30,10 +30,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer pool.Close()
+
 	poolRepo := postgres.NewPgRepo(pool)
 	handlers := usecases.NewItemHandler(poolRepo)
 
-	defer pool.Close()
 	if err := pool.Ping(ctx); err != nil {
 		log.Fatal(err)
 	}
@@ -47,8 +48,10 @@ func main() {
 	})
 
 	serv.HandleFunc("GET /items", handlers.GetItems) 
-	serv.HandleFunc("POST /items", handlers.InsertItems)
+	serv.HandleFunc("POST /items", handlers.InsertItem)
+	serv.HandleFunc("DELETE /items/{id}", handlers.DeleteItem)
 
 	slog.Default().Info("Server is running")
+
 	http.ListenAndServe(":8080", &serv)
 }

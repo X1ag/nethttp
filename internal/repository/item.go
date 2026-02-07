@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"nethttppractice/internal/domain"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type pgRepository struct {
@@ -29,7 +30,7 @@ func (r *pgRepository) GetByID(ctx context.Context, id int) (*domain.Item, error
 }
 
 func (r *pgRepository) GetAllItems(ctx context.Context) ([]domain.Item, error) {
-	query := `SELECT id, name FROM items`
+	query := `SELECT id, name, description FROM items`
 	rows, err := r.pg.Query(ctx, query)
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func (r *pgRepository) GetAllItems(ctx context.Context) ([]domain.Item, error) {
 
 	i := domain.Item{}
 	for rows.Next() {
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
 			return nil, err
 		}	
 		items = append(items, i)
@@ -53,17 +54,20 @@ func (r *pgRepository) GetAllItems(ctx context.Context) ([]domain.Item, error) {
 	return items, nil
 }
 
-func (r *pgRepository) Create(ctx context.Context, u *domain.Item) error {
-	query := `INSERT INTO items (id, name) VALUES ($1, $2)`
-	row, err := r.pg.Exec(ctx, query, u.ID, u.Name)
+func (r *pgRepository) Create(ctx context.Context, item *domain.Item) (*domain.Item, error) {
+	query := `INSERT INTO items (name, description, created_at) VALUES ($1, $2, $3) RETURNING id`
+	err := r.pg.QueryRow(
+		ctx,
+		query,
+		item.Name,
+		item.Description, 
+		item.CreatedAt,
+	).Scan(&item.ID)
 	if err != nil {
-		return err
-	}
-	if row.RowsAffected()== 0 {
-		return errors.New("no rows inserted")
+		return nil, err
 	}
 
-	return nil
+	return item, nil
 }
 
 func (r *pgRepository) Update(ctx context.Context, u *domain.Item) error {
